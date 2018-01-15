@@ -44,7 +44,7 @@ class Usuario{
 
 		$results = $sql->select("SELECT * FROM tb_usuarios WHERE idusuario = :ID", array(":ID"=>$id));	//Comando select na tabela tb_usuarios buscando por ID, retorna um array.
 
-		if(isset($results[0])){	//Se a primeira linha do array existir, ou seja, se tiver encontrado o usuario.
+		if(count($results) > 0){	//Se a primeira linha do array existir, ou seja, se tiver encontrado o usuario.
 			$row = $results[0];
 
 			//Coloca as informaçoes carregadas do banco nos atributos do objeto.
@@ -54,6 +54,45 @@ class Usuario{
 			$this->setCadastro(new DateTime($row['dtcadastro']));
 		}
 	}
+
+
+	//Nao é necessario instanciar um objeto para chamar esse método, por isso ele é estático.
+	public static function getList(){
+		$sql = new Sql();
+		return $sql->select("SELECT * FROM tb_usuarios ORDER BY deslogin;");
+	}
+
+
+	public static function search($login){
+		$sql = new Sql();
+		return $sql->select("SELECT * FROM tb_usuarios WHERE deslogin LIKE :SEARCH ORDER BY deslogin", array(
+			':SEARCH'=>"%".$login."%"
+		));
+	}
+
+
+	public function login($login, $password){
+		$sql = new Sql();	//Objeto Sql
+
+		$results = $sql->select("SELECT * FROM tb_usuarios WHERE deslogin = :LOGIN AND dessenha = :PASSWORD", array(
+			":LOGIN"=>$login,
+			":PASSWORD"=>$password
+		));	//Comando select na tabela tb_usuarios buscando por ID, retorna um array.
+
+		if(count($results) > 0){	//Se a primeira linha do array existir, ou seja, se tiver encontrado o usuario.
+			$row = $results[0];
+
+			//Coloca as informaçoes carregadas do banco nos atributos do objeto.
+			$this->setId($row['idusuario']);
+			$this->setLogin($row['deslogin']);
+			$this->setSenha($row['dessenha']);
+			$this->setCadastro(new DateTime($row['dtcadastro']));
+		}else{
+			throw new Exception("LOGIN E/OU SENHA INVALIDOS!", 1);
+			
+		}
+	}
+
 
 	//__toString é chamada quando um echo é feito em um objeto dessa classe.
 	public function __toString(){
