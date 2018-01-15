@@ -34,16 +34,26 @@ echo ($usuario);
 
 /*
 //Insere um usuario no banco
-$aluno = new Usuario("Bruno", "Zacarin");
+$aluno = new Usuario("VITORIA", "GUIDO");
 $aluno->insert();
 echo $aluno;
 */
 
 
 /*
-*/
+//Atualiza as informaçoes de um usuario.
 $usuario = new Usuario();
 $usuario->loadById(14);
 $usuario->update("Salsicha", "123hau2");
+echo $usuario;
+*/
+
+
+/*
+//Deleta um usuario do banco
+*/
+$usuario = new Usuario();
+$usuario->loadById(14);
+$usuario->delete();
 echo $usuario;
 ?>

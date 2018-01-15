@@ -7,6 +7,7 @@ class Usuario{
 	private $dessenha;
 	private $dtcadastro;
 
+
 	//INICIO: GETTERS AND SETTERS
 	public function getId(){
 		return $this->idusuario;
@@ -42,8 +43,6 @@ class Usuario{
 
 
 	//INICIO: MÉTODOS DE LISTAS
-
-
 	//Carrega informaçoes de um usuario pelo ID.
 	public function loadById($id){
 		$sql = new Sql();	//Objeto Sql
@@ -63,6 +62,7 @@ class Usuario{
 		return $sql->select("SELECT * FROM tb_usuarios ORDER BY deslogin;");
 	}
 
+
 	//Nao é necessario instanciar um objeto para chamar esse método, por isso ele é estático.
 	//Carrega uma lista de usuario do banco, buscando pelo login ou parte do login.
 	public static function search($login){
@@ -71,6 +71,7 @@ class Usuario{
 			':SEARCH'=>"%".$login."%"	//Os '%' servem para colocar aspas simples, permitindo a busca por partes do login.
 		));
 	}
+
 
 	//Carrega um usuario do banco pelo login e senha.
 	public function login($login, $password){
@@ -90,6 +91,8 @@ class Usuario{
 	//TERMINO: MÉTODOS DE LISTAS
 
 
+	//INICIO: MÉTODOS DE INSERÇÃO E UPDATE
+	//Função auxiliar que armazena as informaçoes passadas nos atributos do objeto.
 	public function setDados($dados){
 		$this->setId($dados['idusuario']);
 		$this->setLogin($dados['deslogin']);
@@ -98,41 +101,61 @@ class Usuario{
 	}
 
 
+	//Insere um novo usuario no Banco.
 	public function insert(){
 		$sql = new Sql();
 
+		//Procedure que insere o usuario pelo login e senha e devolve o id e data do cadastro.
 		$results = $sql->select("CALL sp_usuarios_insert(:LOGIN, :PASSWORD)", array(
 			':LOGIN'=>$this->getLogin(),
 			':PASSWORD'=>$this->getSenha()
 		));
 
-		if(count($results) > 0){
-			$this->setDados($results[0]);
+		if(count($results) > 0){	//Se ocorreu tudo certo o usuario é retornado
+			$this->setDados($results[0]);	//Chama o método que coloca as informaçoes carregadas nos atributos do obj.
 		}
 	}
 
 
+	//Atualiza as informaçoes de um usuario
 	public function update($login, $password){
-
 		$this->setLogin($login);
 		$this->setSenha($password);
+
 		$sql = new Sql();
 
+		//Faz o update de login e senha de um usuario que já esta no banco.
 		$sql->query("UPDATE tb_usuarios SET deslogin = :LOGIN, dessenha = :PASSWORD WHERE idusuario = :ID", array(
 			':LOGIN'=>$this->getLogin(),
 			':PASSWORD'=>$this->getSenha(),
 			':ID'=>$this->getId()
-			));
+		));
+	}
+	//TERMINO: MÉTODOS DE INSERÇAO E UPDATE
+
+
+	public function delete(){
+		$sql = new Sql();
+
+		$sql->query("DELETE FROM tb_usuarios WHERE idusuario = :ID", array(
+			':ID'=>$this->getId()
+		));
+
+		$this->setId(0);
+		$this->setLogin("");
+		$this->setSenha("");
+		$this->setCadastro(new DateTime());
 	}
 
-
+	//INICIO: MÉTODOS MÁGICOS.
+	//método construtor.
 	public function __construct($login = "", $password = ""){	//As aspas permitem instanciar objetos sem passar login e senha
 		$this->setLogin($login);
 		$this->setSenha($password);
 	}
 
 
-	//__toString é chamada quando um echo é feito em um objeto dessa classe.
+	//__toString é chamado quando um echo é feito em um objeto dessa classe.
 	public function __toString(){
 		return json_encode(array(
 			"idusuario"=>$this->getId(),
@@ -141,6 +164,7 @@ class Usuario{
 			"dtcadastro"=>$this->getCadastro()->format("d/m/Y H:i:s")	//Exibe o cadastro com o formato desejado (dd/mm/YYYY, hora minuto e segundo)
 		));
 	}
+	//TERMINO: MÉTODOS MÁGICOS.
 }
 
 
